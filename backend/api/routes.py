@@ -205,6 +205,110 @@ def get_user_profile(user_id):
     finally:
         conn.close()
 
+'''
+    This is Addresses management
+'''
+#Adresess routing 
+@app.route("/addresses", methods=["POST"])
+def add_address():
+    data = request.json
+    required_fields = ["user_id", "street", "city", "state", "country", "postal_code"]
+    if not data or not all(field in data for field in required_fields):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    conn = get_db_connection()
+    if conn is None:
+        return jsonify({"error": "DB connection failed"}), 500
+
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO addresses (user_id, street, city, state, country, postal_code)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (data["user_id"], data["street"], data["city"], data["state"], data["country"], data["postal_code"]))
+            conn.commit()
+        return jsonify({"message": "Address added successfully"}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
+
+#get all adresses for a user 
+@app.route("/addresses/<int:user_id>", methods=["GET"])
+def get_addresses(user_id):
+    conn = get_db_connection()
+    if conn is None:
+        return jsonify({"error": "DB connection failed"}), 500
+
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT id, street, city, state, country, postal_code
+                FROM addresses
+                WHERE user_id = %s
+            """, (user_id,))
+            addresses = cur.fetchall()
+
+            address_list = []
+            for addr in addresses:
+                address_list.append({
+                    "id": addr[0],
+                    "street": addr[1],
+                    "city": addr[2],
+                    "state": addr[3],
+                    "country": addr[4],
+                    "postal_code": addr[5]
+                })
+
+            return jsonify({"user_id": user_id, "addresses": address_list}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
+
+#Update address
+@app.route("/addresses/<int:address_id>", methods=["PUT"])
+def update_address(address_id):
+    data = request.json
+    required_fields = ["street", "city", "state", "country", "postal_code"]
+    if not data or not all(field in data for field in required_fields):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    conn = get_db_connection()
+    if conn is None:
+        return jsonify({"error": "DB connection failed"}), 500
+
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                UPDATE addresses
+                SET street = %s, city = %s, state = %s, country = %s, postal_code = %s
+                WHERE id = %s
+            """, (data["street"], data["city"], data["state"], data["country"], data["postal_code"], address_id))
+            conn.commit()
+        return jsonify({"message": "Address updated successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
+
+#Delete Address
+@app.route("/addresses/<int:address_id>", methods=["DELETE"])
+def delete_address(address_id):
+    conn = get_db_connection()
+    if conn is None:
+        return jsonify({"error": "DB connection failed"}), 500
+
+    try:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM addresses WHERE id = %s", (address_id,))
+            conn.commit()
+        return jsonify({"message": "Address deleted successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
+
 # --- Run App ---
 
 @app.route("/", methods=["GET"])
