@@ -1,23 +1,24 @@
-import jwt as pyjwt
+import jwt
 import os
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
 
-SECRET_KEY = os.getenv("SECRET_KEY", "supersecurekey")
+load_dotenv()
+SECRET_KEY = os.getenv("JWT_SECRET", "defaultsecret")
 
-def generate_token(user_id: int) -> str:
-    """Generates a JWT token for authentication."""
+def generate_token(user_id):
     payload = {
         "user_id": user_id,
-        "exp": datetime.utcnow() + timedelta(hours=24)
+        "exp": datetime.utcnow() + timedelta(hours=1)
     }
-    return pyjwt.encode(payload, SECRET_KEY, algorithm="HS256")
+    return jwt.encode(payload, SECRET_KEY, algorithm="HS256")
 
-
-def verify_token(token: str) -> dict:
-    """Verifies and decodes a JWT token."""
+def decode_token(token):
     try:
         return jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
     except jwt.ExpiredSignatureError:
-        return {"error": "Token expired"}
+        print("❌ Token expired")
+        return None
     except jwt.InvalidTokenError:
-        return {"error": "Invalid token"}
+        print("❌ Invalid token")
+        return None
