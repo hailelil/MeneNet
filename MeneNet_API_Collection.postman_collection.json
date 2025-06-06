@@ -1,0 +1,234 @@
+{
+  "info": {
+    "name": "MeneNet API Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "menenet-api-20250606133418"
+  },
+  "item": [
+    {
+      "name": "Auth - Register",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user_id\": 1,\n  \"password\": \"testpassword\"\n}"
+        },
+        "url": {
+          "raw": "http://127.0.0.1:5000/auth/register",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "5000",
+          "path": [
+            "auth",
+            "register"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Auth - Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user_id\": 1,\n  \"password\": \"testpassword\"\n}"
+        },
+        "url": {
+          "raw": "http://127.0.0.1:5000/auth/login",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "5000",
+          "path": [
+            "auth",
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Users - Register",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"date_of_birth\": \"1990-01-01\",\n  \"gender\": \"Male\",\n  \"region_code\": \"AA\"\n}"
+        },
+        "url": {
+          "raw": "http://127.0.0.1:5000/users/register",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "5000",
+          "path": [
+            "users",
+            "register"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Users - Generate ID",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"region_code\": \"AA\",\n  \"dob\": \"1990-01-01\"\n}"
+        },
+        "url": {
+          "raw": "http://127.0.0.1:5000/users/generate_id",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "5000",
+          "path": [
+            "users",
+            "generate_id"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Users - List All Users",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://127.0.0.1:5000/users",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "5000",
+          "path": [
+            "users"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Users - Search by National ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://127.0.0.1:5000/users/search/AA-010190-xxxxxx",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "5000",
+          "path": [
+            "users",
+            "search",
+            "AA-010190-xxxxxx"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Users - Get User by ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://127.0.0.1:5000/users/1",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "5000",
+          "path": [
+            "users",
+            "1"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Relationships - Link Family",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user_id\": 1,\n  \"related_user_id\": 2,\n  \"relationship_type\": \"Parent\"\n}"
+        },
+        "url": {
+          "raw": "http://127.0.0.1:5000/users/link_family",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "5000",
+          "path": [
+            "users",
+            "link_family"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Relationships - Get Family",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://127.0.0.1:5000/relationships/1",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "5000",
+          "path": [
+            "relationships",
+            "1"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Addresses - Get Addresses",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://127.0.0.1:5000/addresses/1",
+          "host": [
+            "127.0.0.1"
+          ],
+          "port": "5000",
+          "path": [
+            "addresses",
+            "1"
+          ]
+        }
+      }
+    }
+  ]
+}

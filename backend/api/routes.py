@@ -8,8 +8,24 @@ from security.encryption import hash_password, verify_password
 from security.token_manager import generate_token
 from controllers.identity import generate_user_id
 from controllers.family import add_family_relationship
+from flask_cors import CORS
+
+import uuid
+from werkzeug.utils import secure_filename
+
 
 app = Flask(__name__)
+CORS(app)
+
+# Reverse relashionship
+REVERSE_RELATIONSHIPS = {
+    'Parent': 'Child',
+    'Child': 'Parent',
+    'Sibling': 'Sibling',
+    'Spouse': 'Spouse',
+    'Grandparent': 'Grandchild',
+    'Grandchild': 'Grandparent'
+}
 
 # --- Authentication ---
 
@@ -103,11 +119,36 @@ def link_family():
     if not data or not all(field in data for field in required_fields):
         return jsonify({"error": "Missing required fields"}), 400
 
+    user_id = data["user_id"]
+    related_user_id = data["related_user_id"]
+    relationship_type = data["relationship_type"]
+    reverse_relationship_type = REVERSE_RELATIONSHIPS.get(relationship_type, relationship_type)  # fallback to same
+
+    conn = get_db_connection()
+    if conn is None:
+        return jsonify({"error": "DB connection failed"}), 500
+
     try:
-        add_family_relationship(data["user_id"], data["related_user_id"], data["relationship_type"])
-        return jsonify({"message": "Family relationship added successfully"}), 201
+        with conn.cursor() as cur:
+            # Insert original relationship
+            cur.execute("""
+                INSERT INTO family_relationships (user_id, related_user_id, relationship_type)
+                VALUES (%s, %s, %s)
+            """, (user_id, related_user_id, relationship_type))
+
+            # Insert reverse relationship
+            cur.execute("""
+                INSERT INTO family_relationships (user_id, related_user_id, relationship_type)
+                VALUES (%s, %s, %s)
+            """, (related_user_id, user_id, reverse_relationship_type))
+
+            conn.commit()
+
+        return jsonify({"message": "Family relationship added successfully (both directions)"}), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
 
 @app.route("/relationships/<int:user_id>", methods=["GET"])
 def get_family_relationships(user_id):
@@ -136,6 +177,8 @@ def get_family_relationships(user_id):
         return jsonify({"error": str(e)}), 500
     finally:
         conn.close()
+
+# --- user search ---- 
 
 #/users/search/{national_id} → search user by national_id → used everywhere (frontend, admin, etc.)
 @app.route("/users/search/<string:national_id>", methods=["GET"])
@@ -206,7 +249,7 @@ def get_user_profile(user_id):
         conn.close()
 
 '''
-    This is Addresses management
+    ---- This is Addresses management -----
 '''
 #Adresess routing 
 @app.route("/addresses", methods=["POST"])
@@ -304,6 +347,182 @@ def delete_address(address_id):
             cur.execute("DELETE FROM addresses WHERE id = %s", (address_id,))
             conn.commit()
         return jsonify({"message": "Address deleted successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
+
+'''
+     ------ Photo Management -------
+'''
+# -- upload profile photo
+@app.route("/photos/upload", methods=["POST"])
+def upload_photo():
+    user_id = request.form.get("user_id")
+    image_file = request.files.get("image_file")
+
+    if not user_id or not image_file:
+        return jsonify({"error": "Missing user_id or image_file"}), 400
+
+    # Save file to static/images/
+    filename = secure_filename(image_file.filename)
+    unique_filename = f"{uuid.uuid4()}_{filename}"
+    save_path = os.path.join(os.path.dirname(__file__), "..", "static", "images", unique_filename)
+    image_file.save(save_path)
+
+    # Store in DB
+    image_url = f"/static/images/{unique_filename}"
+
+    conn = get_db_connection()
+    if conn is None:
+        return jsonify({"error": "DB connection failed"}), 500
+
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO photos (user_id, image_url)
+                VALUES (%s, %s)
+            """, (user_id, image_url))
+            conn.commit()
+        return jsonify({"message": "Photo uploaded successfully", "image_url": image_url}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
+
+#retrive profile photo
+@app.route("/photos/<int:user_id>", methods=["GET"])
+def get_user_photo(user_id):
+    conn = get_db_connection()
+    if conn is None:
+        return jsonify({"error": "DB connection failed"}), 500
+
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT image_url
+                FROM photos
+                WHERE user_id = %s
+                ORDER BY uploaded_at DESC
+                LIMIT 1
+            """, (user_id,))
+            photo = cur.fetchone()
+
+            if not photo:
+                return jsonify({"error": "Photo not found"}), 404
+
+            return jsonify({"user_id": user_id, "image_url": photo[0]}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
+
+'''
+    ------- Biometrics data -------
+'''
+# upload Biometrics  Upload biometrics (future AI-ready)
+@app.route("/biometrics", methods=["POST"])
+def upload_biometrics():
+    user_id = request.form.get("user_id")
+    facial_data_file = request.files.get("facial_data")
+    fingerprint_data_file = request.files.get("fingerprint_data")
+
+    if not user_id:
+        return jsonify({"error": "Missing user_id"}), 400
+
+    # For now → we just store raw files in DB → later you will add AI processing
+    facial_data = facial_data_file.read() if facial_data_file else None
+    fingerprint_data = fingerprint_data_file.read() if fingerprint_data_file else None
+
+    conn = get_db_connection()
+    if conn is None:
+        return jsonify({"error": "DB connection failed"}), 500
+
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO biometrics (user_id, facial_data, fingerprint_data)
+                VALUES (%s, %s, %s)
+            """, (user_id, facial_data, fingerprint_data))
+            conn.commit()
+        return jsonify({"message": "Biometric data uploaded successfully"}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
+
+
+#List all user 
+@app.route("/users", methods=["GET"])
+def list_users():
+    conn = get_db_connection()
+    if conn is None:
+        return jsonify({"error": "DB connection failed"}), 500
+
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT id, first_name, last_name, date_of_birth, gender, national_id
+                FROM users
+                ORDER BY created_at DESC
+            """)
+            users = cur.fetchall()
+
+            user_list = []
+            for user in users:
+                user_list.append({
+                    "id": user[0],
+                    "first_name": user[1],
+                    "last_name": user[2],
+                    "date_of_birth": str(user[3]),
+                    "gender": user[4],
+                    "national_id": user[5]
+                })
+
+            return jsonify({"users": user_list}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
+     
+#add default password 
+@app.route("/auth/update_password", methods=["POST"])
+def update_password():
+    data = request.json
+    required_fields = ["user_id", "old_password", "new_password"]
+    if not data or not all(field in data for field in required_fields):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    conn = get_db_connection()
+    if conn is None:
+        return jsonify({"error": "DB connection failed"}), 500
+
+    try:
+        with conn.cursor() as cur:
+            # Fetch current hashed password
+            cur.execute("SELECT hashed_password FROM authentication WHERE user_id = %s", (data["user_id"],))
+            user = cur.fetchone()
+
+            if not user:
+                return jsonify({"error": "User not found"}), 404
+
+            current_hashed_password = user[0]
+
+            # Verify old password
+            if not verify_password(data["old_password"], current_hashed_password):
+                return jsonify({"error": "Incorrect current password"}), 401
+
+            # Hash new password
+            new_hashed_password = hash_password(data["new_password"])
+
+            # Update password
+            cur.execute("""
+                UPDATE authentication SET hashed_password = %s WHERE user_id = %s
+            """, (new_hashed_password, data["user_id"]))
+
+            conn.commit()
+
+        return jsonify({"message": "Password updated successfully"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
