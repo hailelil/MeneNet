@@ -1,17 +1,34 @@
-# MeneNet - Strong Identity System
+MeneNet Identity System
 
-This project is a modern **Strong Identity Management System** built with:
+A modern, secure, modular Digital Identity Registration System.
 
-- Python (Flask)
-- PostgreSQL
-- Docker
-- JWT Authentication
-- AI-ready Biometric Layer (planned)
-- React.js frontend (planned)
+🚀 Current MVP features:
+
+✅ Identity Registration → Full SPA
+✅ User Info → First Name, Last Name, DOB, Gender, Region
+✅ Profile Photo Upload → automatic
+✅ Address Management → Add Address during registration
+✅ Family Relationships → bi-directional → clickable
+✅ Profile View → clean cards + collapsible
+✅ Search Users → by Name / National ID
+✅ Pagination → with profile photo
+✅ Profile Photo displayed → in User List
+✅ Download Identity Card → Driver’s License style PDF → separate microservice
+✅ Card Generator Microservice → clean architecture
+✅ QR Code → in Card → with verification link
+✅ Issuing Authority + Signature → in Card
+✅ Professional layout → modern look and feel.
 
 ---
+## Project strcture
+MeneNet/
+├── backend/               → Identity REST API (Flask) , Python 
+├── frontend/              → SPA (ReactJS + Bootstrap)
+├── card-generator/        → Card Generator Microservice (Flask + ReportLab + QRCode)
+└── README.md              → Project description
 
-## ✅ Current Architecture
+
+## ✅ Current Architecture  
 
 - Backend: Flask REST API
 - Database: PostgreSQL (Dockerized)
@@ -60,21 +77,6 @@ This project is a modern **Strong Identity Management System** built with:
 
 ---
 
-## 🗺 Roadmap Progress
-
-| Phase                           | Status   |
-|---------------------------------|----------|
-| Setup & Environment             | ✅ Done  |
-| Backend Core Functionality      | ✅ Done  |
-| Database Schema Setup           | ✅ Done  |
-| API Development & Testing       | ✅ In progress (Postman collection being prepared) |
-| Image Processing & AI Integration| ⬜ Next  |
-| Frontend (React.js)             | ⬜ Planned |
-| Deployment & Scaling            | ⬜ Planned |
-| Future Enhancements             | ⬜ Planned |
-
----
-
 ## 🛠 How to Run
 
 ### 1️⃣ Clone the repo:
@@ -102,18 +104,44 @@ python3 -m backend.api.routes
 
 6️⃣ Test API:
 
-👉 Import Postman collection (coming soon).
-👉 Use http://localhost:5000 for API base URL.
+	👉  Postman
 
-✨ Next Steps (Planned)
-	•	Finalize Postman collection
-	•	Implement AI face recognition using FaceNet
-	•	Implement AI fingerprint matching
-	•	Build React.js frontend
-	•	Setup deployment (Docker Compose, Nginx, HTTPS)
-	•	Add full unit tests
-	•	Add API versioning and docs (Swagger)
+ Frontend SPA:
+ 	cd frontend
+   	npm install
+	npm start
+Runs : http://localhost:3000
 
-📚 Documentation
-	•	Full API docs → In progress → /docs/api_documentation.md
-	•	System architecture → /docs/system_architecture.md
+## Card Generator Microservice
+
+	cd card-generator
+	pip install -r requirements.txt
+	python3 app.py
+Run on:
+	http://localhost:6000
+
+Notes
+
+✅ Full architecture → ready to scale → modular → follows best practices.
+✅ SPA → professional UX → inspired by modern identity systems.
+✅ Card Generator → clean independent microservice → can be improved further.
+✅ Database → PostgreSQL → already prepared → users, addresses, photos, family_relationships.
+
+⸻
+
+Next Steps
+
+🚧 Production Deployment Prep:
+✅ Dockerize Card Generator
+✅ Secure CORS config
+✅ Add simple Auth for Card Generator API (JWT / token)
+✅ Optional → verify QR Code points to SPA verify page.
+
+🚧 Final SPA Polish:
+✅ Further improve styling
+✅ Add “Back to Users” on Profile
+✅ Role-based Permissions (Admin vs Normal User).
+
+Author
+
+Haileslassei Lilay Desalegn
