@@ -30,7 +30,7 @@ const AddAddressForm = ({ userId }) => {
                 ...formData
             });
 
-            setMessage('Address added successfully!');
+            setMessage('Address added successfully.');
 
             // Reset form
             setFormData({
@@ -41,7 +41,7 @@ const AddAddressForm = ({ userId }) => {
                 postal_code: '',
             });
         } catch (error) {
-            console.error('Error adding address:', error.response ? error.response.data : error.message);
+            console.error('Error adding address:', error);
             setMessage('Failed to add address.');
         }
     };
@@ -94,18 +94,6 @@ const AddAddressForm = ({ userId }) => {
                 <div className="mb-3">
                     <input
                         type="text"
-                        name="postal_code"
-                        placeholder="Postal Code"
-                        value={formData.postal_code}
-                        onChange={handleChange}
-                        required
-                        className="form-control"
-                    />
-                </div>
-
-                <div className="mb-3">
-                    <input
-                        type="text"
                         name="country"
                         placeholder="Country"
                         value={formData.country}
@@ -115,8 +103,20 @@ const AddAddressForm = ({ userId }) => {
                     />
                 </div>
 
+                <div className="mb-3">
+                    <input
+                        type="text"
+                        name="postal_code"
+                        placeholder="Postal Code"
+                        value={formData.postal_code}
+                        onChange={handleChange}
+                        required
+                        className="form-control"
+                    />
+                </div>
+
                 <div className="d-grid">
-                    <button type="submit" className="btn btn-success btn-lg w-100">
+                    <button type="submit" className="btn btn-primary btn-lg w-100">
                         Add Address
                     </button>
                 </div>

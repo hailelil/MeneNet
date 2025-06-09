@@ -2,7 +2,7 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from database.db_connection import get_db_connection
 from security.encryption import hash_password, verify_password
 from security.token_manager import generate_token
@@ -26,6 +26,11 @@ REVERSE_RELATIONSHIPS = {
     'Grandparent': 'Grandchild',
     'Grandchild': 'Grandparent'
 }
+
+
+@app.route('/static/images/<path:filename>')
+def serve_image(filename):
+    return send_from_directory(os.path.join(os.path.dirname(__file__), '..', 'static', 'images'), filename)
 
 # --- Authentication ---
 
@@ -528,6 +533,74 @@ def update_password():
     finally:
         conn.close()
 
+# -- users search -- 
+@app.route("/users/search", methods=["GET"])
+def search_users():
+    q = request.args.get("q", "")
+
+    conn = get_db_connection()
+    if conn is None:
+        return jsonify({"error": "DB connection failed"}), 500
+
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT id, first_name, last_name, date_of_birth, gender, national_id
+                FROM users
+                WHERE first_name ILIKE %s
+                OR last_name ILIKE %s
+                OR national_id ILIKE %s
+            """, (f"%{q}%", f"%{q}%", f"%{q}%"))
+
+            users = cur.fetchall()
+
+            user_list = []
+            for u in users:
+                user_list.append({
+                    "id": u[0],
+                    "first_name": u[1],
+                    "last_name": u[2],
+                    "date_of_birth": u[3].strftime("%Y-%m-%d"),
+                    "gender": u[4],
+                    "national_id": u[5]
+                })
+
+            return jsonify({"users": user_list}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
+
+
+@app.route("/users/by_national_id/<string:national_id>", methods=["GET"])
+def get_user_by_national_id(national_id):
+    conn = get_db_connection()
+    if conn is None:
+        return jsonify({"error": "DB connection failed"}), 500
+
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT id, first_name, last_name, national_id
+                FROM users
+                WHERE national_id = %s
+            """, (national_id,))
+            user = cur.fetchone()
+            if not user:
+                return jsonify({"error": "User not found"}), 404
+
+            return jsonify({
+                "id": user[0],
+                "first_name": user[1],
+                "last_name": user[2],
+                "national_id": user[3]
+            }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
+
+        
 # --- Run App ---
 
 @app.route("/", methods=["GET"])

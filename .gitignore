@@ -3,5 +3,7 @@ __pycache__/
 *.env
 node_modules/
 venv/
+backend/static/
+backend/scripts/
 Documents/
 .DS_Store
