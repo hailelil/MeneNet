@@ -5,26 +5,42 @@ A modern, secure, modular Digital Identity Registration System.
 🚀 Current MVP features:
 
 ✅ Identity Registration → Full SPA
+
 ✅ User Info → First Name, Last Name, DOB, Gender, Region
+
 ✅ Profile Photo Upload → automatic
+
 ✅ Address Management → Add Address during registration
+
 ✅ Family Relationships → bi-directional → clickable
+
 ✅ Profile View → clean cards + collapsible
+
 ✅ Search Users → by Name / National ID
+
 ✅ Pagination → with profile photo
+
 ✅ Profile Photo displayed → in User List
+
 ✅ Download Identity Card → Driver’s License style PDF → separate microservice
+
 ✅ Card Generator Microservice → clean architecture
+
 ✅ QR Code → in Card → with verification link
+
 ✅ Issuing Authority + Signature → in Card
+
 ✅ Professional layout → modern look and feel.
 
 ---
 ## Project strcture
 MeneNet/
 ├── backend/               → Identity REST API (Flask) , Python 
+
 ├── frontend/              → SPA (ReactJS + Bootstrap)
+
 ├── card-generator/        → Card Generator Microservice (Flask + ReportLab + QRCode)
+
 └── README.md              → Project description
 
 
